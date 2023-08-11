@@ -2,6 +2,7 @@ package scanner
 
 import (
 	. "github.com/keatonmartin/golox/token"
+	"strconv"
 )
 
 type parseError struct {
@@ -74,6 +75,13 @@ func (s *Scanner) peek() uint8 {
 	return s.source[s.current]
 }
 
+func (s *Scanner) peekNext() uint8 {
+	if s.current+1 >= len(s.source) {
+		return '\000'
+	}
+	return s.source[s.current+1]
+}
+
 func (s *Scanner) scanToken() {
 	c := s.advance()
 	switch c {
@@ -129,7 +137,7 @@ func (s *Scanner) scanToken() {
 		} else {
 			s.addToken(SLASH, nil)
 		}
-	case '"':
+	case '"': // parsing string literal
 		for s.peek() != '"' && !s.isAtEnd() {
 			if s.peek() == '\n' {
 				s.line++
@@ -148,9 +156,48 @@ func (s *Scanner) scanToken() {
 	case '\n':
 		s.line++
 	default:
-		s.Errs = append(s.Errs, parseError{
-			Line:    s.line,
-			Message: "Unexpected character",
-		})
+		// parse number literal
+		if isDigit(c) {
+			for isDigit(s.peek()) { // consume all numbers before fractional part
+				s.advance()
+			}
+			// if a dot is found, expect fractional part
+			if s.peek() == '.' && isDigit(s.peekNext()) {
+				s.advance()
+				for isDigit(s.peek()) {
+					s.advance()
+				}
+			}
+			// not handling error, shouldn't expect one.
+			num, _ := strconv.ParseFloat(string(s.source[s.start:s.current]), 64)
+			s.addToken(NUMBER, num)
+		} else if isAlpha(c) {
+			for isAlphaNumeric(s.peek()) {
+				s.advance()
+			}
+			text := string(s.source[s.start:s.current])
+			t, ok := Keywords[text]
+			if !ok { // if not a keyword, type is identifier
+				t = IDENTIFIER
+			}
+			s.addToken(t, nil)
+		} else {
+			s.Errs = append(s.Errs, parseError{
+				Line:    s.line,
+				Message: "Unexpected character",
+			})
+		}
 	}
+}
+
+func isDigit(c uint8) bool {
+	return c >= '0' && c <= '9'
+}
+
+func isAlpha(c uint8) bool {
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c == '_')
+}
+
+func isAlphaNumeric(c uint8) bool {
+	return isDigit(c) || isAlpha(c)
 }
