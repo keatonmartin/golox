@@ -7,7 +7,7 @@ import (
 
 type Expr interface {
 	String() string
-} // eventually this will be filled with helpful methods
+}
 
 type Binary struct {
 	Left, Right Expr
