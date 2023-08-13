@@ -28,7 +28,18 @@ func (p *Parser) Parse() Expr {
 }
 
 func (p *Parser) expression() Expr {
-	return p.equality()
+	return p.ternary()
+}
+
+func (p *Parser) ternary() Expr {
+	cond := p.equality()
+	if p.match(token.QUESTION) {
+		left := p.expression()
+		p.consume(token.COLON, "Expect ':' after then branch of conditional expression.")
+		right := p.ternary()
+		cond = Ternary{cond, left, right}
+	}
+	return cond
 }
 
 func (p *Parser) equality() Expr {
@@ -92,12 +103,12 @@ func (p *Parser) primary() Expr {
 	if p.match(token.NUMBER, token.STRING) {
 		return Literal{p.previous().Literal}
 	}
-
 	if p.match(token.LEFT_PAREN) {
 		expr := p.expression()
 		p.consume(token.RIGHT_PAREN, "Expect ')' after expression.")
 		return Grouping{expr}
 	}
+
 	p.Errs = append(p.Errs, parseError{p.peek(), "Expect expression."})
 	panic("Expect expression") // maybe not the cleanest solution
 }

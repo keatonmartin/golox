@@ -47,9 +47,9 @@ func run(source []byte) {
 	s := scanner.NewScanner(source)
 	tokens := s.ScanTokens()
 
-	//for i := 0; i < len(tokens); i++ {
-	//	fmt.Println(tokens[i].String())
-	//}
+	for i := 0; i < len(tokens); i++ {
+		fmt.Println(tokens[i].String())
+	}
 
 	if len(s.Errs) >= 1 {
 		for _, err := range s.Errs {

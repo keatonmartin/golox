@@ -19,6 +19,8 @@ const (
 	SEMICOLON
 	SLASH
 	STAR
+	QUESTION
+	COLON
 
 	// one or two character tokens
 	BANG
