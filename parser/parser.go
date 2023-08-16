@@ -95,7 +95,6 @@ func (p *Parser) primary() Expr {
 	if p.match(token.NUMBER, token.STRING) {
 		return Literal{p.previous().Literal}
 	}
-
 	if p.match(token.LEFT_PAREN) {
 		expr := p.expression()
 		p.consume(token.RIGHT_PAREN, "Expect ')' after expression.")

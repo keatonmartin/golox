@@ -44,6 +44,7 @@ func (s *Scanner) ScanTokens() []Token {
 		s.start = s.current
 		s.scanToken()
 	}
+	s.tokens = append(s.tokens, NewToken(EOF, []byte{}, nil, s.line))
 	return s.tokens
 }
 

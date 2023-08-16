@@ -81,9 +81,9 @@ func newError(line int, message string) {
 
 func parseError(t token.Token, message string) {
 	if t.TokenType == token.EOF {
-		report(t.Line, " at end", message)
+		report(t.Line, "at end", message)
 	} else {
-		report(t.Line, " at '"+string(t.Lexeme)+"'", message)
+		report(t.Line, "at '"+string(t.Lexeme)+"'", message)
 	}
 }
 
