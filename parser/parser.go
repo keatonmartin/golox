@@ -21,7 +21,10 @@ func NewParser(tokens []token.Token) Parser {
 
 func (p *Parser) Parse() Expr {
 	defer func() {
-		recover()
+		err := recover()
+		if err != nil {
+			p.Errs = append(p.Errs, err.(parseError))
+		}
 	}()
 	exp := p.expression()
 	return exp
@@ -98,16 +101,14 @@ func (p *Parser) primary() Expr {
 		p.consume(token.RIGHT_PAREN, "Expect ')' after expression.")
 		return Grouping{expr}
 	}
-	p.Errs = append(p.Errs, parseError{p.peek(), "Expect expression."})
-	panic("Expect expression") // maybe not the cleanest solution
+	panic(parseError{p.peek(), "Expect expression."}) // maybe not the cleanest solution
 }
 
 func (p *Parser) consume(t token.Type, message string) token.Token {
 	if p.check(t) {
 		return p.advance()
 	}
-	p.Errs = append(p.Errs, parseError{p.peek(), message})
-	panic(message)
+	panic(parseError{p.peek(), message})
 }
 
 // match will determine if the current token is any type t in types

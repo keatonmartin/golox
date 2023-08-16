@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/keatonmartin/golox/interpreter"
 	"github.com/keatonmartin/golox/parser"
 	"github.com/keatonmartin/golox/scanner"
 	"github.com/keatonmartin/golox/token"
@@ -47,10 +48,6 @@ func run(source []byte) {
 	s := scanner.NewScanner(source)
 	tokens := s.ScanTokens()
 
-	//for i := 0; i < len(tokens); i++ {
-	//	fmt.Println(tokens[i].String())
-	//}
-
 	if len(s.Errs) >= 1 {
 		for _, err := range s.Errs {
 			newError(err.Line, err.Message)
@@ -64,9 +61,18 @@ func run(source []byte) {
 		for _, err := range p.Errs {
 			parseError(err.Token, err.Message)
 		}
-	} else {
-		fmt.Println(exp.String())
+		return
 	}
+	i := interpreter.NewInterpreter(exp)
+	res := i.Interpret()
+	if len(i.Errs) >= 1 {
+		for _, err := range i.Errs {
+			runtimeError(err.Tok, err.Message)
+		}
+	} else {
+		fmt.Println(res)
+	}
+
 }
 
 func newError(line int, message string) {
@@ -81,6 +87,10 @@ func parseError(t token.Token, message string) {
 	}
 }
 
+func runtimeError(t token.Token, message string) {
+	report(t.Line, string(t.Lexeme), message)
+}
+
 func report(line int, where, message string) {
-	fmt.Printf("[%d] Error %s: %s\n", line, where, message)
+	_, _ = fmt.Fprintf(os.Stderr, "[%d] Error %s: %s\n", line, where, message)
 }

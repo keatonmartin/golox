@@ -149,9 +149,10 @@ func (s *Scanner) scanToken() {
 				Line:    s.line,
 				Message: "Unterminated string",
 			})
+		} else {
+			s.advance() // consume closing "
+			s.addToken(STRING, string(s.source[s.start+1:s.current-1]))
 		}
-		s.advance() // consume closing "
-		s.addToken(STRING, s.source[s.start+1:s.current-1])
 	case ' ', '\t', '\r':
 	case '\n':
 		s.line++
